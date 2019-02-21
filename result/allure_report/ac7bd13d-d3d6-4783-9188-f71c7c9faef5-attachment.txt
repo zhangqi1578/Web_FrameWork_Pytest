@@ -1,0 +1,2 @@
+conftest.py                 17 INFO     初始化chrome浏览器
+conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面

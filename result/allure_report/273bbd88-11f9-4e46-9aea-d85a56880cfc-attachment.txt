@@ -1,0 +1,23 @@
+ Thu, 21 Feb 2019 22:00:41  INFO test_00_login.py test_login_success [ line:67 ] 正常登录测试_{'username': '18684720553', 'pwd': 'python'}
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.03300189971923828
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:18684720553
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:18684720553
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(首页_member_is_exist)
+ Thu, 21 Feb 2019 22:01:03  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:首页_member_is_exist，用时:21.611235857009888
+ Thu, 21 Feb 2019 22:01:03  INFO test_00_login.py test_login_success [ line:72 ] 测试通过
+ Thu, 21 Feb 2019 22:01:03  INFO test_00_login.py test_login_success [ line:81 ] excel中写回测试结果

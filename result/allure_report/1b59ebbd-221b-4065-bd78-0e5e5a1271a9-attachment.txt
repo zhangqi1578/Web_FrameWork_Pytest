@@ -1,0 +1,14 @@
+ Thu, 21 Feb 2019 22:02:14  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:02:14  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.046003103256225586
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.0240020751953125
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.01700115203857422
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id

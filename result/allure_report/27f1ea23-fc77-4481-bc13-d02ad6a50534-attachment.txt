@@ -1,0 +1,14 @@
+ Thu, 21 Feb 2019 22:01:53  INFO test_01_invest.py test_invest_error_popUp [ line:19 ] 投标测试_投资失败_弹窗提示：{'check': '请正确填写投标金额', 'money': '0'}
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.014001131057739258
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:0
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:0
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_errorPopUp_text，用时:0.5530319213867188
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:01:53  INFO test_01_invest.py test_invest_error_popUp [ line:32 ] 测试通过
+ Thu, 21 Feb 2019 22:01:53  INFO test_01_invest.py test_invest_error_popUp [ line:41 ] excel写回测试结果

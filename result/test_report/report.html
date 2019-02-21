@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Test Report</title>
+    <link href="assets/style.css" rel="stylesheet" type="text/css"/></head>
+  <body onLoad="init()">
+    <script>/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+
+function toArray(iter) {
+    if (iter === null) {
+        return null;
+    }
+    return Array.prototype.slice.call(iter);
+}
+
+function find(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return elem.querySelector(selector);
+}
+
+function find_all(selector, elem) {
+    if (!elem) {
+        elem = document;
+    }
+    return toArray(elem.querySelectorAll(selector));
+}
+
+function sort_column(elem) {
+    toggle_sort_states(elem);
+    var colIndex = toArray(elem.parentNode.childNodes).indexOf(elem);
+    var key;
+    if (elem.classList.contains('numeric')) {
+        key = key_num;
+    } else if (elem.classList.contains('result')) {
+        key = key_result;
+    } else {
+        key = key_alpha;
+    }
+    sort_table(elem, key(colIndex));
+}
+
+function show_all_extras() {
+    find_all('.col-result').forEach(show_extras);
+}
+
+function hide_all_extras() {
+    find_all('.col-result').forEach(hide_extras);
+}
+
+function show_extras(colresult_elem) {
+    var extras = colresult_elem.parentNode.nextElementSibling;
+    var expandcollapse = colresult_elem.firstElementChild;
+    extras.classList.remove("collapsed");
+    expandcollapse.classList.remove("expander");
+    expandcollapse.classList.add("collapser");
+}
+
+function hide_extras(colresult_elem) {
+    var extras = colresult_elem.parentNode.nextElementSibling;
+    var expandcollapse = colresult_elem.firstElementChild;
+    extras.classList.add("collapsed");
+    expandcollapse.classList.remove("collapser");
+    expandcollapse.classList.add("expander");
+}
+
+function show_filters() {
+    var filter_items = document.getElementsByClassName('filter');
+    for (var i = 0; i < filter_items.length; i++)
+        filter_items[i].hidden = false;
+}
+
+function add_collapse() {
+    // Add links for show/hide all
+    var resulttable = find('table#results-table');
+    var showhideall = document.createElement("p");
+    showhideall.innerHTML = '<a href="javascript:show_all_extras()">Show all details</a> / ' +
+                            '<a href="javascript:hide_all_extras()">Hide all details</a>';
+    resulttable.parentElement.insertBefore(showhideall, resulttable);
+
+    // Add show/hide link to each result
+    find_all('.col-result').forEach(function(elem) {
+        var collapsed = get_query_parameter('collapsed') || 'Passed';
+        var extras = elem.parentNode.nextElementSibling;
+        var expandcollapse = document.createElement("span");
+        if (collapsed.includes(elem.innerHTML)) {
+            extras.classList.add("collapsed");
+            expandcollapse.classList.add("expander");
+        } else {
+            expandcollapse.classList.add("collapser");
+        }
+        elem.appendChild(expandcollapse);
+
+        elem.addEventListener("click", function(event) {
+            if (event.currentTarget.parentNode.nextElementSibling.classList.contains("collapsed")) {
+                show_extras(event.currentTarget);
+            } else {
+                hide_extras(event.currentTarget);
+            }
+        });
+    })
+}
+
+function get_query_parameter(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function init () {
+    reset_sort_headers();
+
+    add_collapse();
+
+    show_filters();
+
+    toggle_sort_states(find('.initial-sort'));
+
+    find_all('.sortable').forEach(function(elem) {
+        elem.addEventListener("click",
+                              function(event) {
+                                  sort_column(elem);
+                              }, false)
+    });
+
+};
+
+function sort_table(clicked, key_func) {
+    var rows = find_all('.results-table-row');
+    var reversed = !clicked.classList.contains('asc');
+    var sorted_rows = sort(rows, key_func, reversed);
+    /* Whole table is removed here because browsers acts much slower
+     * when appending existing elements.
+     */
+    var thead = document.getElementById("results-table-head");
+    document.getElementById('results-table').remove();
+    var parent = document.createElement("table");
+    parent.id = "results-table";
+    parent.appendChild(thead);
+    sorted_rows.forEach(function(elem) {
+        parent.appendChild(elem);
+    });
+    document.getElementsByTagName("BODY")[0].appendChild(parent);
+}
+
+function sort(items, key_func, reversed) {
+    var sort_array = items.map(function(item, i) {
+        return [key_func(item), i];
+    });
+    var multiplier = reversed ? -1 : 1;
+
+    sort_array.sort(function(a, b) {
+        var key_a = a[0];
+        var key_b = b[0];
+        return multiplier * (key_a >= key_b ? 1 : -1);
+    });
+
+    return sort_array.map(function(item) {
+        var index = item[1];
+        return items[index];
+    });
+}
+
+function key_alpha(col_index) {
+    return function(elem) {
+        return elem.childNodes[1].childNodes[col_index].firstChild.data.toLowerCase();
+    };
+}
+
+function key_num(col_index) {
+    return function(elem) {
+        return parseFloat(elem.childNodes[1].childNodes[col_index].firstChild.data);
+    };
+}
+
+function key_result(col_index) {
+    return function(elem) {
+        var strings = ['Error', 'Failed', 'Rerun', 'XFailed', 'XPassed',
+                       'Skipped', 'Passed'];
+        return strings.indexOf(elem.childNodes[1].childNodes[col_index].firstChild.data);
+    };
+}
+
+function reset_sort_headers() {
+    find_all('.sort-icon').forEach(function(elem) {
+        elem.parentNode.removeChild(elem);
+    });
+    find_all('.sortable').forEach(function(elem) {
+        var icon = document.createElement("div");
+        icon.className = "sort-icon";
+        icon.textContent = "vvv";
+        elem.insertBefore(icon, elem.firstChild);
+        elem.classList.remove("desc", "active");
+        elem.classList.add("asc", "inactive");
+    });
+}
+
+function toggle_sort_states(elem) {
+    //if active, toggle between asc and desc
+    if (elem.classList.contains('active')) {
+        elem.classList.toggle('asc');
+        elem.classList.toggle('desc');
+    }
+
+    //if inactive, reset all other functions and add ascending active
+    if (elem.classList.contains('inactive')) {
+        reset_sort_headers();
+        elem.classList.remove('inactive');
+        elem.classList.add('active');
+    }
+}
+
+function is_all_rows_hidden(value) {
+  return value.hidden == false;
+}
+
+function filter_table(elem) {
+    var outcome_att = "data-test-result";
+    var outcome = elem.getAttribute(outcome_att);
+    class_outcome = outcome + " results-table-row";
+    var outcome_rows = document.getElementsByClassName(class_outcome);
+
+    for(var i = 0; i < outcome_rows.length; i++){
+        outcome_rows[i].hidden = !elem.checked;
+    }
+
+    var rows = find_all('.results-table-row').filter(is_all_rows_hidden);
+    var all_rows_hidden = rows.length == 0 ? true : false;
+    var not_found_message = document.getElementById("not-found-message");
+    not_found_message.hidden = !all_rows_hidden;
+}
+</script>
+    <h1>report.html</h1>
+    <p>Report generated on 21-Feb-2019 at 22:04:27 by<a href="https://pypi.python.org/pypi/pytest-html"> pytest-html</a> v1.19.0</p>
+    <h2>Environment</h2>
+    <table id="environment">
+      <tr>
+        <td>JAVA_HOME</td>
+        <td>C:\Program Files\Java\jdk1.8.0_111</td></tr>
+      <tr>
+        <td>Packages</td>
+        <td>{&apos;py&apos;: &apos;1.7.0&apos;, &apos;pytest&apos;: &apos;4.0.1&apos;, &apos;pluggy&apos;: &apos;0.8.0&apos;}</td></tr>
+      <tr>
+        <td>Platform</td>
+        <td>Windows-7-6.1.7601-SP1</td></tr>
+      <tr>
+        <td>Plugins</td>
+        <td>{&apos;html&apos;: &apos;1.19.0&apos;, &apos;allure-adaptor&apos;: &apos;1.7.10&apos;, &apos;rerunfailures&apos;: &apos;5.0&apos;, &apos;metadata&apos;: &apos;1.7.0&apos;}</td></tr>
+      <tr>
+        <td>Python</td>
+        <td>3.4.4</td></tr></table>
+    <h2>Summary</h2>
+    <p>14 tests ran in 237.61 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="passed">14 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>, <input checked="true" class="filter" data-test-result="rerun" disabled="true" hidden="true" name="filter_checkbox" onChange="filter_table(this)" type="checkbox"/><span class="rerun">0 rerun</span>
+    <h2>Results</h2>
+    <table id="results-table">
+      <thead id="results-table-head">
+        <tr>
+          <th class="sortable result initial-sort" col="result">Result</th>
+          <th class="sortable" col="name">Test</th>
+          <th class="sortable numeric" col="duration">Duration</th>
+          <th>Links</th></tr>
+        <tr hidden="true" id="not-found-message">
+          <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_form[data0]</td>
+          <td class="col-duration">0.36</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:30  INFO conftest.py init_driver [ line:17 ] 初始化chrome浏览器
+ Thu, 21 Feb 2019 22:00:33  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 17 INFO     初始化chrome浏览器
+conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:35  INFO test_00_login.py test_login_error_form [ line:26 ] 表单错误_登录测试_{&#x27;username&#x27;: &#x27;&#x27;, &#x27;check&#x27;: &#x27;请输入手机号&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.03200197219848633
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.027001142501831055
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_from_text，用时:0.02700209617614746
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:35  INFO test_00_login.py test_login_error_form [ line:31 ] 测试通过
+ Thu, 21 Feb 2019 22:00:35  INFO test_00_login.py test_login_error_form [ line:40 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            26 INFO     表单错误_登录测试_{&#x27;username&#x27;: &#x27;&#x27;, &#x27;check&#x27;: &#x27;请输入手机号&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.03200197219848633
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:
+base_page.py                87 INFO     登录页_login_输入文本成功:
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.027001142501831055
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:python
+base_page.py                87 INFO     登录页_login_输入文本成功:python
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_from_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_from_text，用时:0.02700209617614746
+base_page.py                53 INFO     查找元素:(登录页_error_from_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_from_text)
+test_00_login.py            31 INFO     测试通过
+test_00_login.py            40 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_form[data1]</td>
+          <td class="col-duration">0.32</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:35  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:35  INFO test_00_login.py test_login_error_form [ line:26 ] 表单错误_登录测试_{&#x27;username&#x27;: &#x27;18684720553&#x27;, &#x27;check&#x27;: &#x27;请输入密码&#x27;, &#x27;pwd&#x27;: &#x27;&#x27;}
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.019001007080078125
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:18684720553
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:18684720553
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.02000117301940918
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:
+ Thu, 21 Feb 2019 22:00:35  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_from_text，用时:0.022001028060913086
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:31 ] 测试通过
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:40 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            26 INFO     表单错误_登录测试_{&#x27;username&#x27;: &#x27;18684720553&#x27;, &#x27;check&#x27;: &#x27;请输入密码&#x27;, &#x27;pwd&#x27;: &#x27;&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.019001007080078125
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:18684720553
+base_page.py                87 INFO     登录页_login_输入文本成功:18684720553
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.02000117301940918
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:
+base_page.py                87 INFO     登录页_login_输入文本成功:
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_from_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_from_text，用时:0.022001028060913086
+base_page.py                53 INFO     查找元素:(登录页_error_from_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_from_text)
+test_00_login.py            31 INFO     测试通过
+test_00_login.py            40 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_form[data2]</td>
+          <td class="col-duration">0.31</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:36  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:26 ] 表单错误_登录测试_{&#x27;username&#x27;: &#x27;&#x27;, &#x27;check&#x27;: &#x27;请输入手机号&#x27;, &#x27;pwd&#x27;: &#x27;&#x27;}
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001815795898438
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.022001028060913086
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_from_text，用时:0.022001981735229492
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:31 ] 测试通过
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:40 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            26 INFO     表单错误_登录测试_{&#x27;username&#x27;: &#x27;&#x27;, &#x27;check&#x27;: &#x27;请输入手机号&#x27;, &#x27;pwd&#x27;: &#x27;&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.021001815795898438
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:
+base_page.py                87 INFO     登录页_login_输入文本成功:
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.022001028060913086
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:
+base_page.py                87 INFO     登录页_login_输入文本成功:
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_from_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_from_text，用时:0.022001981735229492
+base_page.py                53 INFO     查找元素:(登录页_error_from_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_from_text)
+test_00_login.py            31 INFO     测试通过
+test_00_login.py            40 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_form[data3]</td>
+          <td class="col-duration">0.34</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:36  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:26 ] 表单错误_登录测试_{&#x27;username&#x27;: &#x27;1868472055&#x27;, &#x27;check&#x27;: &#x27;请输入正确的手机号&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:1868472055
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:1868472055
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.019001007080078125
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_from_text，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:37  INFO test_00_login.py test_login_error_form [ line:31 ] 测试通过
+ Thu, 21 Feb 2019 22:00:37  INFO test_00_login.py test_login_error_form [ line:40 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            26 INFO     表单错误_登录测试_{&#x27;username&#x27;: &#x27;1868472055&#x27;, &#x27;check&#x27;: &#x27;请输入正确的手机号&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:1868472055
+base_page.py                87 INFO     登录页_login_输入文本成功:1868472055
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.019001007080078125
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:python
+base_page.py                87 INFO     登录页_login_输入文本成功:python
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_from_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_from_text，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_error_from_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_from_text)
+test_00_login.py            31 INFO     测试通过
+test_00_login.py            40 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_form[data4]</td>
+          <td class="col-duration">0.35</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:37  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:37  INFO test_00_login.py test_login_error_form [ line:26 ] 表单错误_登录测试_{&#x27;username&#x27;: &#x27;186847205533&#x27;, &#x27;check&#x27;: &#x27;请输入正确的手机号&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:186847205533
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:186847205533
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.019001007080078125
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_from_text，用时:0.0240018367767334
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:37  INFO test_00_login.py test_login_error_form [ line:31 ] 测试通过
+ Thu, 21 Feb 2019 22:00:37  INFO test_00_login.py test_login_error_form [ line:40 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            26 INFO     表单错误_登录测试_{&#x27;username&#x27;: &#x27;186847205533&#x27;, &#x27;check&#x27;: &#x27;请输入正确的手机号&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:186847205533
+base_page.py                87 INFO     登录页_login_输入文本成功:186847205533
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.019001007080078125
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:python
+base_page.py                87 INFO     登录页_login_输入文本成功:python
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_from_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_from_text，用时:0.0240018367767334
+base_page.py                53 INFO     查找元素:(登录页_error_from_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_from_text)
+test_00_login.py            31 INFO     测试通过
+test_00_login.py            40 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_pageCenter[data0]</td>
+          <td class="col-duration">0.90</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:37  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:37  INFO test_00_login.py test_login_error_pageCenter [ line:46 ] totast弹窗错误_登录测试_{&#x27;username&#x27;: &#x27;15731116810&#x27;, &#x27;check&#x27;: &#x27;此账号没有经过授权，请联系管理员!&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.022000789642333984
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:37  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:15731116810
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:15731116810
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_pageCenter_text)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_pageCenter_text，用时:0.5760328769683838
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_pageCenter_text)
+ Thu, 21 Feb 2019 22:00:38  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_pageCenter_text)
+ Thu, 21 Feb 2019 22:00:38  INFO test_00_login.py test_login_error_pageCenter [ line:51 ] 测试通过
+ Thu, 21 Feb 2019 22:00:38  INFO test_00_login.py test_login_error_pageCenter [ line:60 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            46 INFO     totast弹窗错误_登录测试_{&#x27;username&#x27;: &#x27;15731116810&#x27;, &#x27;check&#x27;: &#x27;此账号没有经过授权，请联系管理员!&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.022000789642333984
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:15731116810
+base_page.py                87 INFO     登录页_login_输入文本成功:15731116810
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:python
+base_page.py                87 INFO     登录页_login_输入文本成功:python
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_pageCenter_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_pageCenter_text，用时:0.5760328769683838
+base_page.py                53 INFO     查找元素:(登录页_error_pageCenter_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_pageCenter_text)
+test_00_login.py            51 INFO     测试通过
+test_00_login.py            60 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_error_pageCenter[data1]</td>
+          <td class="col-duration">0.91</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:38  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:39  INFO test_00_login.py test_login_error_pageCenter [ line:46 ] totast弹窗错误_登录测试_{&#x27;username&#x27;: &#x27;18684720553&#x27;, &#x27;check&#x27;: &#x27;帐号或密码错误!&#x27;, &#x27;pwd&#x27;: &#x27;123456&#x27;}
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:18684720553
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:18684720553
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.019001007080078125
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:123456
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:123456
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_pageCenter_text)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_pageCenter_text，用时:0.5710320472717285
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_pageCenter_text)
+ Thu, 21 Feb 2019 22:00:39  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_pageCenter_text)
+ Thu, 21 Feb 2019 22:00:39  INFO test_00_login.py test_login_error_pageCenter [ line:51 ] 测试通过
+ Thu, 21 Feb 2019 22:00:39  INFO test_00_login.py test_login_error_pageCenter [ line:60 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            46 INFO     totast弹窗错误_登录测试_{&#x27;username&#x27;: &#x27;18684720553&#x27;, &#x27;check&#x27;: &#x27;帐号或密码错误!&#x27;, &#x27;pwd&#x27;: &#x27;123456&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:18684720553
+base_page.py                87 INFO     登录页_login_输入文本成功:18684720553
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.019001007080078125
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:123456
+base_page.py                87 INFO     登录页_login_输入文本成功:123456
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(登录页_error_pageCenter_text)
+base_page.py                45 INFO     等待元素成功:登录页_error_pageCenter_text，用时:0.5710320472717285
+base_page.py                53 INFO     查找元素:(登录页_error_pageCenter_text)
+base_page.py                95 INFO     获取元素文本:(登录页_error_pageCenter_text)
+test_00_login.py            51 INFO     测试通过
+test_00_login.py            60 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_00_login.py::TestLogin::test_login_success</td>
+          <td class="col-duration">21.92</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:00:39  INFO conftest.py init_loginPage [ line:28 ] 执行测试用例,进入前程贷登录页面
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 28 INFO     执行测试用例,进入前程贷登录页面----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:00:41  INFO test_00_login.py test_login_success [ line:67 ] 正常登录测试_{&#x27;username&#x27;: &#x27;18684720553&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.03300189971923828
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:18684720553
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:18684720553
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:41  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(首页_member_is_exist)
+ Thu, 21 Feb 2019 22:01:03  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:首页_member_is_exist，用时:21.611235857009888
+ Thu, 21 Feb 2019 22:01:03  INFO test_00_login.py test_login_success [ line:72 ] 测试通过
+ Thu, 21 Feb 2019 22:01:03  INFO test_00_login.py test_login_success [ line:81 ] excel中写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_00_login.py            67 INFO     正常登录测试_{&#x27;username&#x27;: &#x27;18684720553&#x27;, &#x27;pwd&#x27;: &#x27;python&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.03300189971923828
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:18684720553
+base_page.py                87 INFO     登录页_login_输入文本成功:18684720553
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:python
+base_page.py                87 INFO     登录页_login_输入文本成功:python
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                40 INFO     等待元素:(首页_member_is_exist)
+base_page.py                45 INFO     等待元素成功:首页_member_is_exist，用时:21.611235857009888
+test_00_login.py            72 INFO     测试通过
+test_00_login.py            81 INFO     excel中写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_01_invest.py::TestInvest::test_invest_error_popUp[data0]</td>
+          <td class="col-duration">0.73</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:01:05  INFO conftest.py init_driver [ line:17 ] 初始化chrome浏览器
+ Thu, 21 Feb 2019 22:01:08  INFO conftest.py init_login [ line:37 ] 进入前程贷登录页面，登录系统
+ Thu, 21 Feb 2019 22:01:09  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:09  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.03900313377380371
+ Thu, 21 Feb 2019 22:01:09  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:18684720553
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:18684720553
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.025001049041748047
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:python
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:python
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:01:10  INFO base_page.py click_element [ line:62 ] 点击元素:(首页_click_bid_button)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py click_element [ line:65 ] 点击元素成功:(首页_click_bid_button)
+ Thu, 21 Feb 2019 22:01:53  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:01:53  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.0650029182434082
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.012000799179077148
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.013000965118408203
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 17 INFO     初始化chrome浏览器
+conftest.py                 37 INFO     进入前程贷登录页面，登录系统
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.03900313377380371
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:18684720553
+base_page.py                87 INFO     登录页_login_输入文本成功:18684720553
+base_page.py                40 INFO     等待元素:(登录页_login)
+base_page.py                45 INFO     等待元素成功:登录页_login，用时:0.025001049041748047
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                73 INFO     清空输入框文本:(登录页_login)
+base_page.py                76 INFO     清空输入框成功:(登录页_login)
+base_page.py                53 INFO     查找元素:(登录页_login)
+base_page.py                84 INFO     登录页_login_输入文本:python
+base_page.py                87 INFO     登录页_login_输入文本成功:python
+base_page.py                62 INFO     点击元素:(登录页_login)
+base_page.py                65 INFO     点击元素成功:(登录页_login)
+base_page.py                62 INFO     点击元素:(首页_click_bid_button)
+base_page.py                65 INFO     点击元素成功:(首页_click_bid_button)
+conftest.py                 48 INFO     执行测试
+conftest.py                 49 INFO     获取标的相关信息：标余额，用户余额，标id
+base_page.py                40 INFO     等待元素:(登录页_get_bid_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_left_money，用时:0.0650029182434082
+base_page.py                53 INFO     查找元素:(登录页_get_bid_left_money)
+base_page.py               105 INFO     登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_user_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_user_left_money，用时:0.012000799179077148
+base_page.py                53 INFO     查找元素:(登录页_get_user_left_money)
+base_page.py               105 INFO     登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_bid_id)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_id，用时:0.013000965118408203
+base_page.py                53 INFO     查找元素:(登录页_get_bid_id)
+base_page.py               105 INFO     登录页_get_bid_id_获取元素属性:登录页_get_bid_id----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:01:53  INFO test_01_invest.py test_invest_error_popUp [ line:19 ] 投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;请正确填写投标金额&#x27;, &#x27;money&#x27;: &#x27;0&#x27;}
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.014001131057739258
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:0
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:0
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_errorPopUp_text，用时:0.5530319213867188
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:01:53  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:01:53  INFO test_01_invest.py test_invest_error_popUp [ line:32 ] 测试通过
+ Thu, 21 Feb 2019 22:01:53  INFO test_01_invest.py test_invest_error_popUp [ line:41 ] excel写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_01_invest.py           19 INFO     投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;请正确填写投标金额&#x27;, &#x27;money&#x27;: &#x27;0&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.014001131057739258
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:0
+base_page.py                87 INFO     登录页_input_money_输入文本成功:0
+base_page.py                62 INFO     点击元素:(登录页_click_invest_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_invest_button)
+base_page.py                40 INFO     等待元素:(登录页_get_errorPopUp_text)
+base_page.py                45 INFO     等待元素成功:登录页_get_errorPopUp_text，用时:0.5530319213867188
+base_page.py                53 INFO     查找元素:(登录页_get_errorPopUp_text)
+base_page.py                95 INFO     获取元素文本:(登录页_get_errorPopUp_text)
+test_01_invest.py           32 INFO     测试通过
+test_01_invest.py           41 INFO     excel写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_01_invest.py::TestInvest::test_invest_error_popUp[data1]</td>
+          <td class="col-duration">0.75</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:02:14  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:02:14  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.046003103256225586
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:14  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.0240020751953125
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.01700115203857422
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 48 INFO     执行测试
+conftest.py                 49 INFO     获取标的相关信息：标余额，用户余额，标id
+base_page.py                40 INFO     等待元素:(登录页_get_bid_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_left_money，用时:0.046003103256225586
+base_page.py                53 INFO     查找元素:(登录页_get_bid_left_money)
+base_page.py               105 INFO     登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_user_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_user_left_money，用时:0.0240020751953125
+base_page.py                53 INFO     查找元素:(登录页_get_user_left_money)
+base_page.py               105 INFO     登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_bid_id)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_id，用时:0.01700115203857422
+base_page.py                53 INFO     查找元素:(登录页_get_bid_id)
+base_page.py               105 INFO     登录页_get_bid_id_获取元素属性:登录页_get_bid_id----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:02:15  INFO test_01_invest.py test_invest_error_popUp [ line:19 ] 投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;投标金额必须为100的倍数&#x27;, &#x27;money&#x27;: &#x27;1050&#x27;}
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.013000011444091797
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:1050
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:1050
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_errorPopUp_text，用时:0.5540320873260498
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:15  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:15  INFO test_01_invest.py test_invest_error_popUp [ line:32 ] 测试通过
+ Thu, 21 Feb 2019 22:02:15  INFO test_01_invest.py test_invest_error_popUp [ line:41 ] excel写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_01_invest.py           19 INFO     投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;投标金额必须为100的倍数&#x27;, &#x27;money&#x27;: &#x27;1050&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.013000011444091797
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:1050
+base_page.py                87 INFO     登录页_input_money_输入文本成功:1050
+base_page.py                62 INFO     点击元素:(登录页_click_invest_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_invest_button)
+base_page.py                40 INFO     等待元素:(登录页_get_errorPopUp_text)
+base_page.py                45 INFO     等待元素成功:登录页_get_errorPopUp_text，用时:0.5540320873260498
+base_page.py                53 INFO     查找元素:(登录页_get_errorPopUp_text)
+base_page.py                95 INFO     获取元素文本:(登录页_get_errorPopUp_text)
+test_01_invest.py           32 INFO     测试通过
+test_01_invest.py           41 INFO     excel写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_01_invest.py::TestInvest::test_invest_error_popUp[data2]</td>
+          <td class="col-duration">0.80</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:02:36  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:02:36  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.04800295829772949
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.021001100540161133
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.020001888275146484
+ Thu, 21 Feb 2019 22:02:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 48 INFO     执行测试
+conftest.py                 49 INFO     获取标的相关信息：标余额，用户余额，标id
+base_page.py                40 INFO     等待元素:(登录页_get_bid_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_left_money，用时:0.04800295829772949
+base_page.py                53 INFO     查找元素:(登录页_get_bid_left_money)
+base_page.py               105 INFO     登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_user_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_user_left_money，用时:0.021001100540161133
+base_page.py                53 INFO     查找元素:(登录页_get_user_left_money)
+base_page.py               105 INFO     登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_bid_id)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_id，用时:0.020001888275146484
+base_page.py                53 INFO     查找元素:(登录页_get_bid_id)
+base_page.py               105 INFO     登录页_get_bid_id_获取元素属性:登录页_get_bid_id----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:02:37  INFO test_01_invest.py test_invest_error_popUp [ line:19 ] 投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;购买标的金额不能大于标剩余金额&#x27;, &#x27;money&#x27;: &#x27;moreBidLeft&#x27;}
+ Thu, 21 Feb 2019 22:02:37  INFO test_01_invest.py test_invest_error_popUp [ line:22 ] moreBidLeft数据替换为：11535900
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.018001079559326172
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:11535900
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:11535900
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_errorPopUp_text，用时:0.5740330219268799
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:37  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:37  INFO test_01_invest.py test_invest_error_popUp [ line:32 ] 测试通过
+ Thu, 21 Feb 2019 22:02:37  INFO test_01_invest.py test_invest_error_popUp [ line:41 ] excel写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_01_invest.py           19 INFO     投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;购买标的金额不能大于标剩余金额&#x27;, &#x27;money&#x27;: &#x27;moreBidLeft&#x27;}
+test_01_invest.py           22 INFO     moreBidLeft数据替换为：11535900
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.018001079559326172
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:11535900
+base_page.py                87 INFO     登录页_input_money_输入文本成功:11535900
+base_page.py                62 INFO     点击元素:(登录页_click_invest_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_invest_button)
+base_page.py                40 INFO     等待元素:(登录页_get_errorPopUp_text)
+base_page.py                45 INFO     等待元素成功:登录页_get_errorPopUp_text，用时:0.5740330219268799
+base_page.py                53 INFO     查找元素:(登录页_get_errorPopUp_text)
+base_page.py                95 INFO     获取元素文本:(登录页_get_errorPopUp_text)
+test_01_invest.py           32 INFO     测试通过
+test_01_invest.py           41 INFO     excel写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_01_invest.py::TestInvest::test_invest_error_popUp[data3]</td>
+          <td class="col-duration">0.77</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:02:58  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:02:58  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.0370020866394043
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.01200103759765625
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.01200103759765625
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 48 INFO     执行测试
+conftest.py                 49 INFO     获取标的相关信息：标余额，用户余额，标id
+base_page.py                40 INFO     等待元素:(登录页_get_bid_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_left_money，用时:0.0370020866394043
+base_page.py                53 INFO     查找元素:(登录页_get_bid_left_money)
+base_page.py               105 INFO     登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_user_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_user_left_money，用时:0.01200103759765625
+base_page.py                53 INFO     查找元素:(登录页_get_user_left_money)
+base_page.py               105 INFO     登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_bid_id)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_id，用时:0.01200103759765625
+base_page.py                53 INFO     查找元素:(登录页_get_bid_id)
+base_page.py               105 INFO     登录页_get_bid_id_获取元素属性:登录页_get_bid_id----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:02:58  INFO test_01_invest.py test_invest_error_popUp [ line:19 ] 投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;投标金额大于可用金额&#x27;, &#x27;money&#x27;: &#x27;moreUserLeft&#x27;}
+ Thu, 21 Feb 2019 22:02:58  INFO test_01_invest.py test_invest_error_popUp [ line:25 ] moreUserLeft数据替换为：18213100
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.013000965118408203
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:02:58  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:18213100
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:18213100
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_errorPopUp_text，用时:0.5750329494476318
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:59  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_errorPopUp_text)
+ Thu, 21 Feb 2019 22:02:59  INFO test_01_invest.py test_invest_error_popUp [ line:32 ] 测试通过
+ Thu, 21 Feb 2019 22:02:59  INFO test_01_invest.py test_invest_error_popUp [ line:41 ] excel写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_01_invest.py           19 INFO     投标测试_投资失败_弹窗提示：{&#x27;check&#x27;: &#x27;投标金额大于可用金额&#x27;, &#x27;money&#x27;: &#x27;moreUserLeft&#x27;}
+test_01_invest.py           25 INFO     moreUserLeft数据替换为：18213100
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.013000965118408203
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:18213100
+base_page.py                87 INFO     登录页_input_money_输入文本成功:18213100
+base_page.py                62 INFO     点击元素:(登录页_click_invest_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_invest_button)
+base_page.py                40 INFO     等待元素:(登录页_get_errorPopUp_text)
+base_page.py                45 INFO     等待元素成功:登录页_get_errorPopUp_text，用时:0.5750329494476318
+base_page.py                53 INFO     查找元素:(登录页_get_errorPopUp_text)
+base_page.py                95 INFO     获取元素文本:(登录页_get_errorPopUp_text)
+test_01_invest.py           32 INFO     测试通过
+test_01_invest.py           41 INFO     excel写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_01_invest.py::TestInvest::test_invest_error_button</td>
+          <td class="col-duration">0.12</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:03:20  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:03:20  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.04800295829772949
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.01399993896484375
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.014000892639160156
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 48 INFO     执行测试
+conftest.py                 49 INFO     获取标的相关信息：标余额，用户余额，标id
+base_page.py                40 INFO     等待元素:(登录页_get_bid_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_left_money，用时:0.04800295829772949
+base_page.py                53 INFO     查找元素:(登录页_get_bid_left_money)
+base_page.py               105 INFO     登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_user_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_user_left_money，用时:0.01399993896484375
+base_page.py                53 INFO     查找元素:(登录页_get_user_left_money)
+base_page.py               105 INFO     登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_bid_id)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_id，用时:0.014000892639160156
+base_page.py                53 INFO     查找元素:(登录页_get_bid_id)
+base_page.py               105 INFO     登录页_get_bid_id_获取元素属性:登录页_get_bid_id----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:03:20  INFO test_01_invest.py test_invest_error_button [ line:44 ] 投标测试_投资失败_投标按钮提示：{&#x27;check&#x27;: &#x27;请输入10的整数倍&#x27;, &#x27;money&#x27;: &#x27;555&#x27;}
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.015001058578491211
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:555
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:555
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bidButton_text)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bidButton_text，用时:0.03200197219848633
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bidButton_text)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_bidButton_text)
+ Thu, 21 Feb 2019 22:03:20  INFO test_01_invest.py test_invest_error_button [ line:49 ] 测试通过
+ Thu, 21 Feb 2019 22:03:20  INFO test_01_invest.py test_invest_error_button [ line:58 ] excel写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_01_invest.py           44 INFO     投标测试_投资失败_投标按钮提示：{&#x27;check&#x27;: &#x27;请输入10的整数倍&#x27;, &#x27;money&#x27;: &#x27;555&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.015001058578491211
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:555
+base_page.py                87 INFO     登录页_input_money_输入文本成功:555
+base_page.py                40 INFO     等待元素:(登录页_get_bidButton_text)
+base_page.py                45 INFO     等待元素成功:登录页_get_bidButton_text，用时:0.03200197219848633
+base_page.py                53 INFO     查找元素:(登录页_get_bidButton_text)
+base_page.py                95 INFO     获取元素文本:(登录页_get_bidButton_text)
+test_01_invest.py           49 INFO     测试通过
+test_01_invest.py           58 INFO     excel写回测试结果</div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">Test_Case/test_01_invest.py::TestInvest::test_invest_success</td>
+          <td class="col-duration">22.57</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">---------------------------- Captured stderr setup -----------------------------<br/> Thu, 21 Feb 2019 22:03:42  INFO conftest.py init_bidPage [ line:48 ] 执行测试
+ Thu, 21 Feb 2019 22:03:42  INFO conftest.py init_bidPage [ line:49 ] 获取标的相关信息：标余额，用户余额，标id
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_left_money，用时:0.040001869201660156
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_left_money)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_user_left_money，用时:0.015001058578491211
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_user_left_money)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bid_id，用时:0.014000892639160156
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bid_id)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py get_eleAttribute [ line:105 ] 登录页_get_bid_id_获取元素属性:登录页_get_bid_id
+------------------------------ Captured log setup ------------------------------<br/>conftest.py                 48 INFO     执行测试
+conftest.py                 49 INFO     获取标的相关信息：标余额，用户余额，标id
+base_page.py                40 INFO     等待元素:(登录页_get_bid_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_left_money，用时:0.040001869201660156
+base_page.py                53 INFO     查找元素:(登录页_get_bid_left_money)
+base_page.py               105 INFO     登录页_get_bid_left_money_获取元素属性:登录页_get_bid_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_user_left_money)
+base_page.py                45 INFO     等待元素成功:登录页_get_user_left_money，用时:0.015001058578491211
+base_page.py                53 INFO     查找元素:(登录页_get_user_left_money)
+base_page.py               105 INFO     登录页_get_user_left_money_获取元素属性:登录页_get_user_left_money
+base_page.py                40 INFO     等待元素:(登录页_get_bid_id)
+base_page.py                45 INFO     等待元素成功:登录页_get_bid_id，用时:0.014000892639160156
+base_page.py                53 INFO     查找元素:(登录页_get_bid_id)
+base_page.py               105 INFO     登录页_get_bid_id_获取元素属性:登录页_get_bid_id----------------------------- Captured stderr call -----------------------------<br/> Thu, 21 Feb 2019 22:03:42  INFO test_01_invest.py test_invest_success [ line:70 ] 投标测试_投资成功：{&#x27;money&#x27;: &#x27;1000&#x27;}
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.013000965118408203
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:1000
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:1000
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_invest_button)
+ Thu, 21 Feb 2019 22:03:42  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_click_success_button)
+ Thu, 21 Feb 2019 22:04:03  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_click_success_button)
+ Thu, 21 Feb 2019 22:04:03  INFO base_page.py click_element [ line:62 ] 点击元素:(首页_click_Tz_tab)
+ Thu, 21 Feb 2019 22:04:03  INFO base_page.py click_element [ line:65 ] 点击元素成功:(首页_click_Tz_tab)
+ Thu, 21 Feb 2019 22:04:03  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(首页_get_lastTz_id)
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:首页_get_lastTz_id，用时:0.5770330429077148
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py find_element [ line:53 ] 查找元素:(首页_get_lastTz_id)
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py get_eleAttribute [ line:105 ] 首页_get_lastTz_id_获取元素属性:首页_get_lastTz_id
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(首页_get_lastTz_money)
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:首页_get_lastTz_money，用时:0.04600191116333008
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py find_element [ line:53 ] 查找元素:(首页_get_lastTz_money)
+ Thu, 21 Feb 2019 22:04:04  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(首页_get_lastTz_money)
+ Thu, 21 Feb 2019 22:04:04  INFO test_01_invest.py test_invest_success [ line:78 ] 测试通过
+ Thu, 21 Feb 2019 22:04:04  INFO test_01_invest.py test_invest_success [ line:87 ] excel写回测试结果
+------------------------------ Captured log call -------------------------------<br/>test_01_invest.py           70 INFO     投标测试_投资成功：{&#x27;money&#x27;: &#x27;1000&#x27;}
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.013000965118408203
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:1000
+base_page.py                87 INFO     登录页_input_money_输入文本成功:1000
+base_page.py                62 INFO     点击元素:(登录页_click_invest_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_invest_button)
+base_page.py                62 INFO     点击元素:(登录页_click_success_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_success_button)
+base_page.py                62 INFO     点击元素:(首页_click_Tz_tab)
+base_page.py                65 INFO     点击元素成功:(首页_click_Tz_tab)
+base_page.py                40 INFO     等待元素:(首页_get_lastTz_id)
+base_page.py                45 INFO     等待元素成功:首页_get_lastTz_id，用时:0.5770330429077148
+base_page.py                53 INFO     查找元素:(首页_get_lastTz_id)
+base_page.py               105 INFO     首页_get_lastTz_id_获取元素属性:首页_get_lastTz_id
+base_page.py                40 INFO     等待元素:(首页_get_lastTz_money)
+base_page.py                45 INFO     等待元素成功:首页_get_lastTz_money，用时:0.04600191116333008
+base_page.py                53 INFO     查找元素:(首页_get_lastTz_money)
+base_page.py                95 INFO     获取元素文本:(首页_get_lastTz_money)
+test_01_invest.py           78 INFO     测试通过
+test_01_invest.py           87 INFO     excel写回测试结果</div></td></tr></tbody></table></body></html>

@@ -1,0 +1,17 @@
+[ {
+  "buildOrder" : 14,
+  "reportUrl" : "http://192.168.3.117:8080/job/python10_WebAuto/14/allure",
+  "reportName" : "AllureReport",
+  "data" : {
+    "run" : 16,
+    "retry" : 0
+  }
+}, {
+  "buildOrder" : 13,
+  "reportUrl" : "http://192.168.3.117:8080/job/python10_WebAuto/13/allure",
+  "reportName" : "AllureReport",
+  "data" : {
+    "run" : 9,
+    "retry" : 0
+  }
+} ]

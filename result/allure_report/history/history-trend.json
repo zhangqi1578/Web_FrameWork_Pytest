@@ -1,0 +1,25 @@
+[ {
+  "buildOrder" : 14,
+  "reportUrl" : "http://192.168.3.117:8080/job/python10_WebAuto/14/allure",
+  "reportName" : "AllureReport",
+  "data" : {
+    "failed" : 1,
+    "broken" : 0,
+    "skipped" : 0,
+    "passed" : 15,
+    "unknown" : 0,
+    "total" : 16
+  }
+}, {
+  "buildOrder" : 13,
+  "reportUrl" : "http://192.168.3.117:8080/job/python10_WebAuto/13/allure",
+  "reportName" : "AllureReport",
+  "data" : {
+    "failed" : 0,
+    "broken" : 0,
+    "skipped" : 0,
+    "passed" : 9,
+    "unknown" : 0,
+    "total" : 9
+  }
+} ]

@@ -1,0 +1,15 @@
+test_01_invest.py           19 INFO     投标测试_投资失败_弹窗提示：{'check': '投标金额大于可用金额', 'money': 'moreUserLeft'}
+test_01_invest.py           25 INFO     moreUserLeft数据替换为：18213100
+base_page.py                40 INFO     等待元素:(登录页_input_money)
+base_page.py                45 INFO     等待元素成功:登录页_input_money，用时:0.013000965118408203
+base_page.py                53 INFO     查找元素:(登录页_input_money)
+base_page.py                84 INFO     登录页_input_money_输入文本:18213100
+base_page.py                87 INFO     登录页_input_money_输入文本成功:18213100
+base_page.py                62 INFO     点击元素:(登录页_click_invest_button)
+base_page.py                65 INFO     点击元素成功:(登录页_click_invest_button)
+base_page.py                40 INFO     等待元素:(登录页_get_errorPopUp_text)
+base_page.py                45 INFO     等待元素成功:登录页_get_errorPopUp_text，用时:0.5750329494476318
+base_page.py                53 INFO     查找元素:(登录页_get_errorPopUp_text)
+base_page.py                95 INFO     获取元素文本:(登录页_get_errorPopUp_text)
+test_01_invest.py           32 INFO     测试通过
+test_01_invest.py           41 INFO     excel写回测试结果

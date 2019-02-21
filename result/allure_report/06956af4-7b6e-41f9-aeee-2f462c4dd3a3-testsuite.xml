@@ -1,0 +1,258 @@
+<ns0:test-suite xmlns:ns0="urn:model.allure.qatools.yandex.ru" start="1550757630395" stop="1550757844689">
+  <name>python10_Web_FrameWork_Pytest.Test_Case</name>
+  <labels/>
+  <test-cases>
+    <test-case start="1550757630395" status="passed" stop="1550757635513">
+      <description>异常登录【from错误提示】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_form[data0]</name>
+      <attachments>
+        <attachment source="ae8eb0aa-db45-4a45-bb7b-7d995600ee77-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="ac7bd13d-d3d6-4783-9188-f71c7c9faef5-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="c02ec901-1679-49b2-8c4a-0be392ff2ccb-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="3864cec5-df08-4ce5-ab2c-8a200b37bb1b-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757635518" status="passed" stop="1550757636059">
+      <description>异常登录【from错误提示】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_form[data1]</name>
+      <attachments>
+        <attachment source="dc5fb2f6-fa3d-4730-bb00-ea47a669a592-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="48d19193-d865-44e9-a385-509670bb04a4-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="49bcda02-ef04-407c-9520-e44308d9736e-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="70a5247a-fb70-41c4-91c7-ae3c9f5c5044-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757636064" status="passed" stop="1550757636591">
+      <description>异常登录【from错误提示】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_form[data2]</name>
+      <attachments>
+        <attachment source="df4389a3-70d8-4ee8-941e-73f04c477b22-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="3473bb6a-071c-40f0-a942-aa6984390cff-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="6628d08f-6c70-4e3d-a5ee-e84b3f5a9336-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="b8fcfd94-6c71-40be-9e8d-f062c71772f6-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757636595" status="passed" stop="1550757637156">
+      <description>异常登录【from错误提示】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_form[data3]</name>
+      <attachments>
+        <attachment source="1736d1a2-eb11-4c0d-b56d-a956e9e4d7dd-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="4925adb4-7fd8-44a0-a4c2-1ae6a5c42c41-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="37180f08-4c81-4417-a56b-e4927ffc6280-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="be657b03-5100-43ec-8642-2fa6bf24a911-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757637161" status="passed" stop="1550757637726">
+      <description>异常登录【from错误提示】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_form[data4]</name>
+      <attachments>
+        <attachment source="4d5ad46a-50ab-4d31-8bf8-03190ff5bb3b-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="1943494e-9971-4fa6-b456-03583759443b-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="7f524801-0f81-4c20-adb3-212d094e4a7d-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="efab8139-6a64-429b-9270-1ea5b40b7927-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757637731" status="passed" stop="1550757638857">
+      <description>异常登录【错误提示pageCenter-totast】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_pageCenter[data0]</name>
+      <attachments>
+        <attachment source="54baeeca-3d32-4214-99c3-d06f7f2c93e2-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="1b123842-bfd7-4dc4-aea1-0096e2258717-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="f647eb02-45e7-41a7-948e-e0ed6f98d508-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="86bab182-b656-4fd4-8ce4-84e0e7d5aa95-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757638862" status="passed" stop="1550757639975">
+      <description>异常登录【错误提示pageCenter-totast】，测试用例步骤及断言实现一样的可以通过ddt来执行</description>
+      <name>test_00_login.TestLogin.test_login_error_pageCenter[data1]</name>
+      <attachments>
+        <attachment source="e9178486-4579-4122-94ef-a6ac152e6084-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="9a137b9b-1698-4b53-a4ed-0c333039d5a4-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="476f84fb-c6fc-40fe-8565-8764193f23dd-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="c8bdea69-aadb-41f8-928c-7e84d1086f06-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757639981" status="passed" stop="1550757663088">
+      <description>正常登录</description>
+      <name>test_00_login.TestLogin.test_login_success</name>
+      <attachments>
+        <attachment source="f4c7d7c6-3aeb-4271-a5a0-a977e8a12e8e-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="23dca65c-df7e-45ab-9141-2a1c0ba6b332-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="273bbd88-11f9-4e46-9aea-d85a56880cfc-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="9016666f-4dd7-4244-9a3b-22702fbdfcb4-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757665197" status="passed" stop="1550757713895">
+      <name>test_01_invest.TestInvest.test_invest_error_popUp[data0]</name>
+      <attachments>
+        <attachment source="55af270c-71f2-4825-9371-f1f530681d1e-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="e42120d6-4815-424c-9d67-e7229772852d-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="27f1ea23-fc77-4481-bc13-d02ad6a50534-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="666508f1-9987-4599-a30c-086af3f4ef6b-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757734937" status="passed" stop="1550757735834">
+      <name>test_01_invest.TestInvest.test_invest_error_popUp[data1]</name>
+      <attachments>
+        <attachment source="4798ca9a-3d29-4c4a-b9e0-becb67f697c4-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="740ac3a8-aa1e-42e3-903c-faf21ac7ea48-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="1dae095c-a4a9-45a3-af2a-c93fb5d0a974-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="1b59ebbd-221b-4065-bd78-0e5e5a1271a9-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757756855" status="passed" stop="1550757757808">
+      <name>test_01_invest.TestInvest.test_invest_error_popUp[data2]</name>
+      <attachments>
+        <attachment source="e915965e-9520-47d9-b1d0-d8ea132da514-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="d55ca07c-59ff-4967-b5a6-72770ea36aa0-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="3db3c444-44d5-42e9-96c9-f795ffc33dc2-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="418cea1c-5ca3-4f10-84f0-0a24c62fee86-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757778836" status="passed" stop="1550757779707">
+      <name>test_01_invest.TestInvest.test_invest_error_popUp[data3]</name>
+      <attachments>
+        <attachment source="6c86ef04-8cec-4051-a118-faf411209bfe-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="4756af36-ebea-491b-b501-9d48eae824c0-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="e8c775b0-aa49-4616-83df-928e76d6e234-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="576f9bf5-bf5e-4fa9-9cfd-f5b77a2104c9-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757800737" status="passed" stop="1550757800978">
+      <name>test_01_invest.TestInvest.test_invest_error_button</name>
+      <attachments>
+        <attachment source="8330fcb6-63e8-47c2-bded-918656b151b0-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="00493147-2bb6-4ae9-aab5-f1a95fd2b78a-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="8116c3d9-072d-4ebe-ba22-93c6bec6732d-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="a63227c0-7c30-426e-af84-de122cdcae2d-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+    <test-case start="1550757822009" status="passed" stop="1550757844689">
+      <description>
+        成功投标测试用例
+        :return:
+        
+        :return:
+        </description>
+      <name>test_01_invest.TestInvest.test_invest_success</name>
+      <attachments>
+        <attachment source="c1bfa108-62bc-4866-9e96-2436443bb5d9-attachment.txt" title="Captured log call" type="text/plain"/>
+        <attachment source="92cef36b-abfa-4d9f-afa9-af77889e9b15-attachment.txt" title="Captured log setup" type="text/plain"/>
+        <attachment source="eb0b6b74-69a9-4642-9ac7-c025e621eee5-attachment.txt" title="Captured stderr call" type="text/plain"/>
+        <attachment source="65184225-2c75-4a2e-b4a0-6cc462c949e1-attachment.txt" title="Captured stderr setup" type="text/plain"/>
+      </attachments>
+      <labels>
+        <label name="severity" value="normal"/>
+        <label name="thread" value="1112-MainThread"/>
+        <label name="host" value="mucang-PC"/>
+        <label name="framework" value="pytest"/>
+        <label name="language" value="cpython3"/>
+      </labels>
+      <steps/>
+    </test-case>
+  </test-cases>
+</ns0:test-suite>

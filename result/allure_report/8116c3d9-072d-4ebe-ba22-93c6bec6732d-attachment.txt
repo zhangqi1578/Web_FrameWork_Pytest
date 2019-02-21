@@ -1,0 +1,12 @@
+ Thu, 21 Feb 2019 22:03:20  INFO test_01_invest.py test_invest_error_button [ line:44 ] 投标测试_投资失败_投标按钮提示：{'check': '请输入10的整数倍', 'money': '555'}
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_input_money，用时:0.015001058578491211
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_input_money)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py send_keys [ line:84 ] 登录页_input_money_输入文本:555
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py send_keys [ line:87 ] 登录页_input_money_输入文本成功:555
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_get_bidButton_text)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_get_bidButton_text，用时:0.03200197219848633
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_get_bidButton_text)
+ Thu, 21 Feb 2019 22:03:20  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_get_bidButton_text)
+ Thu, 21 Feb 2019 22:03:20  INFO test_01_invest.py test_invest_error_button [ line:49 ] 测试通过
+ Thu, 21 Feb 2019 22:03:20  INFO test_01_invest.py test_invest_error_button [ line:58 ] excel写回测试结果

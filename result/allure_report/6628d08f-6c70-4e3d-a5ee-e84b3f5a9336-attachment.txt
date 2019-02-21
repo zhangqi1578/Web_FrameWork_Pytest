@@ -1,0 +1,25 @@
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:26 ] 表单错误_登录测试_{'username': '', 'check': '请输入手机号', 'pwd': ''}
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.021001815795898438
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_login，用时:0.022001028060913086
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:73 ] 清空输入框文本:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py clear_input_text [ line:76 ] 清空输入框成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:84 ] 登录页_login_输入文本:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py send_keys [ line:87 ] 登录页_login_输入文本成功:
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py click_element [ line:62 ] 点击元素:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py click_element [ line:65 ] 点击元素成功:(登录页_login)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:40 ] 等待元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py wait_eleVisible [ line:45 ] 等待元素成功:登录页_error_from_text，用时:0.022001981735229492
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py find_element [ line:53 ] 查找元素:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO base_page.py get_eleText [ line:95 ] 获取元素文本:(登录页_error_from_text)
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:31 ] 测试通过
+ Thu, 21 Feb 2019 22:00:36  INFO test_00_login.py test_login_error_form [ line:40 ] excel中写回测试结果
